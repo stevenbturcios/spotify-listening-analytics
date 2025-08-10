@@ -16,7 +16,7 @@ files = glob.glob(os.path.join(RAW_DIR, "*.json"))
 if not files:
     print(f"No JSON files in {RAW_DIR}."); raise SystemExit
 
-# load & combine
+# load & combine data
 df = pd.concat([pd.DataFrame(json.load(open(f, "r", encoding="utf-8"))) for f in files],
                ignore_index=True)
 
