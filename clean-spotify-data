@@ -1,0 +1,49 @@
+# spotify-clean.py
+# Load Spotify JSON files from data/raw/, remove podcasts/radio,
+# and save a clean CSV for Tableau at data/spotify_clean.csv
+
+import pandas as pd, glob, json, os
+from pathlib import Path
+
+RAW_DIR = "data/raw"
+OUT_CSV = "data/spotify_clean.csv"
+KEYWORDS = ["podcast", "episode", "show", "radio", "talk", "news"]
+
+Path("data").mkdir(exist_ok=True)
+Path(RAW_DIR).mkdir(parents=True, exist_ok=True)
+
+files = glob.glob(os.path.join(RAW_DIR, "*.json"))
+if not files:
+    print(f"No JSON files in {RAW_DIR}."); raise SystemExit
+
+# load & combine
+df = pd.concat([pd.DataFrame(json.load(open(f, "r", encoding="utf-8"))) for f in files],
+               ignore_index=True)
+
+# normalize basic columns to a single set of names (handles classic + extended)
+df = df.rename(columns={
+    "master_metadata_album_artist_name": "artist_name",
+    "master_metadata_track_name": "track_name",
+    "master_metadata_album_album_name": "album_name",
+})
+df["artist_name"] = df.get("artist_name", df.get("artistName"))
+df["track_name"]  = df.get("track_name",  df.get("trackName"))
+df["album_name"]  = df.get("album_name",  df.get("albumName"))
+df["ts"]          = df.get("ts",          df.get("endTime"))
+df["ms_played"]   = pd.to_numeric(df.get("ms_played", df.get("msPlayed")), errors="coerce").fillna(0)
+
+# drop podcasts: if episode fields exist OR artist/track text looks like podcast/radio
+episode_flag = df.get("episode_name").notna() if "episode_name" in df else False
+show_flag    = df.get("episode_show_name").notna() if "episode_show_name" in df else False
+kw = "|".join(KEYWORDS)
+kw_flag = (
+    df["artist_name"].fillna("").str.contains(kw, case=False, na=False) |
+    df["track_name"].fillna("").str.contains(kw, case=False, na=False)
+)
+music = df[~(episode_flag | show_flag | kw_flag)].copy()
+
+# save clean  CSV
+keep = ["ts", "artist_name", "album_name", "track_name",
+        "ms_played", "minutes_played", "hours_played"]
+music[keep].to_csv(OUT_CSV, index=False)
+print(f"Saved {OUT_CSV} | rows: {len(music):,}")
