@@ -80,3 +80,5 @@ SUM([minutes_played])
 - Added bar charts (Top Artists/Top Albums)
 - Added the Listening Over Time chart 
 - Added Hour by Day Heatmap 
+
+[View Dashboard on Tableau Public](https://public.tableau.com/app/profile/steven.turcios/viz/SpotifyDashboard_17462459612420/SpotifyDashboard)
