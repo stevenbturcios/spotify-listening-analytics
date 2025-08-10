@@ -58,3 +58,25 @@ SUM([minutes_played])
 
 6. Hour of Day (for the heatmap): DATEPART('hour', [ts])
 
+**Sheets**
+
+-KPIs
+  -Total Streams: COUNT([track_name]) or COUNTD([ts]) depending on definition of “streams”.
+  -Different tracks: COUNTD([track_name])
+  -Different artists: COUNTD([artist_name])
+  -Different albums: COUNTD([album_name])
+  -Minutes streamed: SUM([minutes_played])
+  -Hours streamed: SUM([hours_played])
+  -Days streamed: COUNTD(DATE([ts]))
+-Top Artists: Rows = [artist_name], Columns = SUM([minutes_played]); sort desc; filter Top N if needed
+-Top 10 Albums: same pattern with [album_name]
+-Hour‑by‑Day Heatmap:
+  -Columns: HOUR([ts]) (discrete, formatted to 1 AM … 12 AM)
+  -Rows: DATENAME('weekday',[ts])
+  -Color: SUM([hours_played])
+
+### Dashboard
+-Added KPI tiles along the left side
+-Added bar charts (Top Artists/Top Albums)
+-Added the Listening Over Time chart 
+-Added Hour by Day Heatmap 
